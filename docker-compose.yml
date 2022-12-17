@@ -1,0 +1,84 @@
+version: '3.8'
+services:
+  # db:
+  #   image: mysql/mysql-router:8.0
+  #   container_name: "MYSQL_ROUTER"
+  #   env_file:
+  #     - ./.env
+  #   environment:
+  #     - MYSQL_HOST=node1
+  #     - MYSQL_PORT=${MYSQL_PORT}
+  #     - MYSQL_USER=${MYSQL_USER}
+  #     - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+  #   ports:
+  #     - "33060:8080"
+  #   depends_on:
+  #     - node1
+  #     - node2
+  #     - node3
+
+  node1:
+    image: mysql/mysql-server:8.0
+    container_name: "MYSQL_NODE_1"
+    hostname: server1
+    ports:
+      - 33061:3306
+    restart: unless-stopped
+    # sets the network address which the member provides for connections from other members, specified as a host:port formatted string.    
+    command: [ "mysqld",
+      "--server-id=1",
+      "--loose-group-replication-local-address=node1:33061"]
+    env_file:
+      - ./.env
+    volumes:
+      - ./my.cnf:/etc/mysql/my.cnf
+      - ./my-init.sql:/docker-entrypoint-initdb.d/my-init.sql
+      - ./data/node1:/var/lib/mysql
+    healthcheck:
+      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
+      interval: 2s
+      retries: 20
+
+  node2:
+    image: mysql/mysql-server:8.0
+    container_name: "MYSQL_NODE_2"
+    hostname: server2
+    ports:
+      - 33062:3306
+    restart: unless-stopped
+    # sets the network address which the member provides for connections from other members, specified as a host:port formatted string.    
+    command: [ "mysqld",
+      "--server-id=2",
+      "--loose-group-replication-local-address=node2:33061"]               
+    env_file:
+      - ./.env
+    volumes:
+      - ./my.cnf:/etc/mysql/my.cnf
+      - ./my-init.sql:/docker-entrypoint-initdb.d/my-init.sql
+      - ./data/node2:/var/lib/mysql
+    healthcheck:
+      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
+      interval: 2s
+      retries: 20
+        
+  node3:
+    image: mysql/mysql-server:8.0
+    container_name: "MYSQL_NODE_3"
+    hostname: server3
+    ports:
+      - 33063:3306
+    restart: unless-stopped
+    # sets the network address which the member provides for connections from other members, specified as a host:port formatted string.    
+    command: [ "mysqld",
+      "--server-id=3",
+      "--loose-group-replication-local-address=node3:33061"]               
+    env_file:
+      - ./.env
+    volumes:
+      - ./my.cnf:/etc/mysql/my.cnf
+      - ./my-init.sql:/docker-entrypoint-initdb.d/my-init.sql
+      - ./data/node3:/var/lib/mysql
+    healthcheck:
+      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
+      interval: 2s
+      retries: 20
